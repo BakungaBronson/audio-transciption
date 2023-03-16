@@ -1,1 +1,12 @@
 venv
+
+# Ignore all thé whisper output file formats
+*.srt
+*.tsv
+*.txt
+*.vtt
+*.json
+
+# Ignore all audio files
+*.mp3
+*.wav
