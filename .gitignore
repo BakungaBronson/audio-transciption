@@ -10,3 +10,6 @@ venv
 # Ignore all audio files
 *.mp3
 *.wav
+
+# Ignore demo file
+Demo
