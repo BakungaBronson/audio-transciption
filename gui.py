@@ -3,6 +3,8 @@ from tkinter import filedialog
 import os
 import moviepy.editor as mp
 from tkinter import ttk
+import whisper
+import json
 
 def submit_form():
     # Define the allowed file types
@@ -12,6 +14,8 @@ def submit_form():
     file_path = filedialog.askopenfilename(title="Select Video File", filetypes=filetypes)
     
     if file_path:
+        if os.path.isfile(audio_path):
+            status_label.configure(text="Audio file already exists!")
         # Show the loading animation
         status_label.configure(text="Extracting audio...")
         progress_bar.start(10)
@@ -27,6 +31,19 @@ def submit_form():
         status_label.configure(text="Audio extracted successfully!")
         progress_bar.stop()
         progress_bar["value"] = 0
+        
+        status_label.configure(text="Getting audio transcription...!")
+        
+        model = whisper.load_model("base")
+        result = model.transcribe(audio_path)
+        
+        # Save the transcription to a text file with the same name as the audio file
+        transcription_file = os.path.splitext(audio_path)[0] + ".txt"
+        with open(transcription_file, "w") as f:
+            f.write(result["text"])
+
+        status_label.configure(text="Transcription saved to {transcription_file}!")
+
 
 
 def update_progress_bar(progress, duration):
