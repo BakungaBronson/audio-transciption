@@ -1,46 +1,64 @@
 import tkinter as tk
 from tkinter import filedialog
+import os
 import moviepy.editor as mp
+from tkinter import ttk
 
-# Define the function to extract the audio from the video file
-def extract_audio(video_file):
-    # Load the video file using MoviePy
-    video_clip = mp.VideoFileClip(video_file)
-
-    # Extract the audio from the video clip
-    audio_clip = video_clip.audio
-
-    # Set the output file name and path
-    output_file = video_file.split(".")[0] + ".mp3"
-
-    # Save the audio clip as an MP3 file
-    audio_clip.write_audiofile(output_file)
-
-    # Close the clips
-    audio_clip.close()
-    video_clip.close()
-
-    # Print a message to indicate the extraction is complete
-    print("Audio extraction complete.")
-
-# Define the function to handle the form submission
 def submit_form():
-    # Open a file dialog to choose the video file
-    video_file = filedialog.askopenfilename(initialdir="/", title="Select Video File", filetypes=(("Video Files", "*.mp4;*.avi;*.mov"), ("All Files", "*.*")))
+    # Define the allowed file types
+    filetypes = [("Video files", "*.mp4;*.avi;*.flv;*.wmv;*.mov")]
+    
+    # Get the video file path from the user
+    file_path = filedialog.askopenfilename(title="Select Video File", filetypes=filetypes)
+    
+    if file_path:
+        # Show the loading animation
+        status_label.configure(text="Extracting audio...")
+        progress_bar.start(10)
 
-    # Extract the audio from the video file
-    extract_audio(video_file)
+        # Extract the audio from the video file
+        video = mp.VideoFileClip(file_path)
+        audio = video.audio
+        audio_path = os.path.splitext(file_path)[0] + ".mp3"
+        sub_audio = audio.subclip(0, video.duration)
+        sub_audio.write_audiofile(audio_path)
+
+        # Display a success message to the user
+        status_label.configure(text="Audio extracted successfully!")
+        progress_bar.stop()
+        progress_bar["value"] = 0
+
+
+def update_progress_bar(progress, duration):
+    # Update the progress bar
+    progress_bar["value"] = progress
+    progress_bar.update_idletasks()
 
 # Create the Tkinter window
 window = tk.Tk()
 window.title("Video Audio Extractor")
+window.geometry("400x450")
 
-# Create the form elements
-tk.Label(window, text="Video File Path").grid(row=0, column=0)
-video_path_entry = tk.Entry(window)
-video_path_entry.grid(row=0, column=1)
-submit_button = tk.Button(window, text="Submit", command=submit_form)
-submit_button.grid(row=1, column=0, columnspan=2)
+# Create a canvas with a blue and purple gradient background
+canvas = tk.Canvas(window, width=400, height=400)
+canvas.pack()
 
-# Run the window loop
+# Create a rounded white button
+submit_button = tk.Button(window, text="Submit", command=submit_form, bg="white", fg="black", bd=0, relief="flat", font=("Arial", 14), padx=20, pady=10, borderwidth=0)
+submit_button.place(relx=0.5, rely=0.5, anchor="center")
+submit_button.configure(width=12, height=1)
+submit_button.update_idletasks()
+rounded_size = min(submit_button.winfo_width(), submit_button.winfo_height())
+submit_button.configure(width=rounded_size, height=rounded_size, bd=0, relief="flat")
+submit_button.place(relx=0.5, rely=0.6, anchor="center")
+
+# Create a progress bar to display the status of the audio extraction
+progress_bar = tk.ttk.Progressbar(window, orient="horizontal", length=200, mode="determinate")
+progress_bar.place(relx=0.5, rely=0.7, anchor="center")
+
+# Create a label to display the status message
+status_label = tk.Label(window, text="")
+status_label.place(relx=0.5, rely=0.85, anchor="center")
+
+# Start the Tkinter event loop
 window.mainloop()
